@@ -26,9 +26,9 @@ export function CompanyOnboarding({ onSuccess }: CompanyOnboardingProps) {
         slug: slug || `company-${Math.random().toString(36).slice(2, 7)}` 
       })
       onSuccess()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create company', err)
-      const msg = err.message || 'Please try a different name.'
+      const msg = err instanceof Error ? err.message : 'Please try a different name.'
       alert(`Failed to create company: ${msg}`)
     } finally {
       setLoading(false)

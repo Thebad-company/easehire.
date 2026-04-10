@@ -21,7 +21,7 @@ export default function OverviewPage() {
       }
     }
     loadStats()
-  }, [])
+  }, [api])
 
   const cards = [
     { name: 'Active Jobs', value: stats.jobs, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50', href: '/dashboard/jobs' },

@@ -5,9 +5,10 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { useApi } from '@/hooks/useApi'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import type { Job } from '@/types'
 
 export default function JobsListPage() {
-  const [jobs, setJobs] = useState<any[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const api = useApi()
 
@@ -23,7 +24,7 @@ export default function JobsListPage() {
       }
     }
     loadJobs()
-  }, [])
+  }, [api])
 
   return (
     <DashboardLayout>

@@ -1,11 +1,12 @@
 import { useAuth } from '@clerk/react';
+import { useCallback, useMemo } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export function useApi() {
   const { getToken } = useAuth();
 
-  const request = async (endpoint: string, options: RequestInit = {}) => {
+  const request = useCallback(async (endpoint: string, options: RequestInit = {}) => {
     const token = await getToken();
     
     const headers = new Headers(options.headers);
@@ -26,12 +27,12 @@ export function useApi() {
     }
 
     return data;
-  };
+  }, [getToken]);
 
-  return {
+  return useMemo(() => ({
     get: (endpoint: string) => request(endpoint, { method: 'GET' }),
-    post: (endpoint: string, body: any) => request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
-    patch: (endpoint: string, body: any) => request(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+    post: (endpoint: string, body: unknown) => request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+    patch: (endpoint: string, body: unknown) => request(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
     delete: (endpoint: string) => request(endpoint, { method: 'DELETE' }),
-  };
+  }), [request]);
 }

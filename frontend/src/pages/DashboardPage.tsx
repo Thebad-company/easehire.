@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/react'
 import { useApi } from '@/hooks/useApi'
 import { CompanyOnboarding } from '@/components/dashboard/CompanyOnboarding'
+import type { User as DbUser } from '@/types'
 import OverviewPage from './Dashboard/OverviewPage'
 
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const api = useApi()
-  const [dbUser, setDbUser] = useState<any>(null)
+  const [dbUser, setDbUser] = useState<DbUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,16 +30,16 @@ export default function DashboardPage() {
         // 2. Fetch full profile (to check companyId)
         const profile = await api.get('/api/users/me')
         setDbUser(profile.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Core dashboard setup failed', err)
-        setError(err.message || 'Failed to connect to server')
+        setError(err instanceof Error ? err.message : 'Failed to connect to server')
       } finally {
         setIsLoading(false)
       }
     }
 
     syncAndFetch()
-  }, [isLoaded, isSignedIn])
+  }, [isLoaded, isSignedIn, user, api])
 
   if (!isLoaded || isLoading) {
     return (

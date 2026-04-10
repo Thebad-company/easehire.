@@ -1,0 +1,44 @@
+
+> web@0.0.0 lint
+> eslint .
+
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/components/dashboard/CompanyOnboarding.tsx
+  29:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/components/ui/input.tsx
+  4:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/components/ui/switch.tsx
+  9:6  error  'className' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/components/ui/textarea.tsx
+  4:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/hooks/useApi.ts
+  33:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/pages/Dashboard/CandidatesPage.tsx
+  12:52  error    Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  33:6   warning  React Hook useEffect has a missing dependency: 'api'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/pages/Dashboard/JobDetailsPage.tsx
+  26:34  error    Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  27:52  error    Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  46:6   warning  React Hook useEffect has a missing dependency: 'api'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/pages/Dashboard/JobsListPage.tsx
+  10:36  error    Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  26:6   warning  React Hook useEffect has a missing dependency: 'api'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/pages/Dashboard/OverviewPage.tsx
+  24:6  warning  React Hook useEffect has a missing dependency: 'api'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/viveksuyal/Downloads/easehire/frontend/src/pages/DashboardPage.tsx
+  10:40  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  32:21  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  41:6   warning  React Hook useEffect has missing dependencies: 'api' and 'user'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 17 problems (12 errors, 5 warnings)
+

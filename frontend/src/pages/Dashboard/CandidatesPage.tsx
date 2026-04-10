@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import type { Application } from '@/types'
 
 export default function CandidatesPage() {
-  const [applications, setApplications] = useState<any[]>([])
+  const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const api = useApi()
@@ -17,20 +18,16 @@ export default function CandidatesPage() {
   useEffect(() => {
     async function loadCandidates() {
       try {
-        // Fetch all jobs first, then applications for each? 
-        // For now, we'll assume a "all applications" endpoint or just fetch for a job
-        // Let's use the list jobs + applications count for now, but better to have a dedicated endpoint
         const res = await api.get('/api/applications') 
         setApplications(res.data || [])
       } catch (err) {
-        // Fallback: if 'all' doesn't exist, try to fetch per job or show empty
         console.error('Failed to load all candidates', err)
       } finally {
         setLoading(false)
       }
     }
     loadCandidates()
-  }, [])
+  }, [api])
 
   return (
     <DashboardLayout>
@@ -90,17 +87,17 @@ export default function CandidatesPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="size-8">
                         <AvatarFallback className="text-[10px] bg-slate-100 font-bold">
-                          {app.candidate.firstName[0]}{app.candidate.lastName[0]}
+                          {app.candidate?.firstName?.[0] || '?'}{app.candidate?.lastName?.[0] || '?'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{app.candidate.firstName} {app.candidate.lastName}</p>
-                        <p className="text-xs text-slate-500">{app.candidate.email}</p>
+                        <p className="text-sm font-semibold text-slate-900">{app.candidate?.firstName} {app.candidate?.lastName}</p>
+                        <p className="text-xs text-slate-500">{app.candidate?.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm text-slate-600">{app.job.title}</p>
+                    <p className="text-sm text-slate-600">{app.job?.title}</p>
                   </td>
                   <td className="px-6 py-4">
                     <Badge variant="soft" className="capitalize">{app.stage.toLowerCase()}</Badge>
@@ -108,7 +105,7 @@ export default function CandidatesPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5">
                       <BrainCircuit className="size-3.5 text-indigo-600" />
-                      <span className="text-sm font-bold text-slate-900">{app.candidate.aiScore}%</span>
+                      <span className="text-sm font-bold text-slate-900">{app.candidate?.aiScore || 0}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">

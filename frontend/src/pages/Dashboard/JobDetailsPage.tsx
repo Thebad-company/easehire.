@@ -18,13 +18,14 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import type { Application, ApplicationStage, Job } from '@/types'
 
 export default function JobDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const api = useApi()
-  const [job, setJob] = useState<any>(null)
-  const [applications, setApplications] = useState<any[]>([])
+  const [job, setJob] = useState<Job | null>(null)
+  const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -43,14 +44,14 @@ export default function JobDetailsPage() {
       }
     }
     loadData()
-  }, [id])
+  }, [id, api])
 
   const handleStageUpdate = async (appId: string, stage: string) => {
     try {
       await api.patch(`/api/applications/${appId}/stage`, { stage })
       // Update local state
       setApplications(prev => prev.map(app => 
-        app.id === appId ? { ...app, stage } : app
+        app.id === appId ? { ...app, stage: stage as ApplicationStage } : app
       ))
     } catch (err) {
       console.error('Failed to update stage', err)
@@ -63,6 +64,19 @@ export default function JobDetailsPage() {
         <div className="animate-pulse space-y-8">
           <div className="h-8 w-48 bg-slate-200 rounded" />
           <div className="h-40 bg-white rounded-2xl border border-slate-200" />
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (!job) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-20">
+          <p className="text-slate-500">Job not found.</p>
+          <Button onClick={() => navigate('/dashboard/jobs')} className="mt-4">
+            Back to Jobs
+          </Button>
         </div>
       </DashboardLayout>
     )
@@ -139,7 +153,7 @@ export default function JobDetailsPage() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {applications.sort((a, b) => (b.candidate.aiScore || 0) - (a.candidate.aiScore || 0)).map((app) => (
+              {applications.sort((a, b) => (b.candidate?.aiScore || 0) - (a.candidate?.aiScore || 0)).map((app) => (
                 <div 
                   key={app.id} 
                   className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-sm hover:border-indigo-200 transition-all"
@@ -147,19 +161,19 @@ export default function JobDetailsPage() {
                   <div className="flex items-center gap-4 min-w-0">
                     <Avatar className="size-12 border-2 border-slate-50">
                       <AvatarFallback className="bg-indigo-50 text-indigo-700 font-bold">
-                        {app.candidate.firstName[0]}{app.candidate.lastName[0]}
+                        {app.candidate?.firstName?.[0] || '?'}{app.candidate?.lastName?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-slate-900 truncate">
-                          {app.candidate.firstName} {app.candidate.lastName}
+                          {app.candidate?.firstName} {app.candidate?.lastName}
                         </h4>
                         <Badge variant="outline" className="text-[10px] h-5 bg-slate-50">
                            {app.source}
                         </Badge>
                       </div>
-                      <p className="text-sm text-slate-500 truncate">{app.candidate.email}</p>
+                      <p className="text-sm text-slate-500 truncate">{app.candidate?.email}</p>
                     </div>
                   </div>
 
@@ -170,10 +184,10 @@ export default function JobDetailsPage() {
                         AI Score
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xl font-bold text-slate-900">{app.candidate.aiScore}%</span>
+                        <span className="text-xl font-bold text-slate-900">{app.candidate?.aiScore || 0}%</span>
                         <div className="flex">
                            {[1,2,3,4,5].map(i => (
-                             <Star key={i} className={cn("size-3", i <= Math.round(app.candidate.aiScore/20) ? "text-amber-400 fill-amber-400" : "text-slate-200")} />
+                             <Star key={i} className={cn("size-3", i <= Math.round((app.candidate?.aiScore || 0)/20) ? "text-amber-400 fill-amber-400" : "text-slate-200")} />
                            ))}
                         </div>
                       </div>
@@ -206,7 +220,7 @@ export default function JobDetailsPage() {
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
                     </div>
                     <Button variant="ghost" size="icon" asChild>
-                      <a href={app.candidate.resumeUrl} target="_blank" rel="noreferrer">
+                      <a href={app.candidate?.resumeUrl || '#'} target="_blank" rel="noreferrer">
                         <ExternalLink className="size-4" />
                       </a>
                     </Button>
@@ -224,9 +238,9 @@ export default function JobDetailsPage() {
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
             <h3 className="text-xl font-bold text-slate-900 mb-6">About the Role</h3>
             <div className="prose prose-slate max-w-none">
-              <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+              <div className="text-slate-600 leading-relaxed whitespace-pre-wrap">
                 {job.description}
-              </p>
+              </div>
             </div>
           </div>
         </TabsContent>
