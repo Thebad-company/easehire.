@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { requireAuthGuard } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { applicationController } from '../controllers/application.controller.js';
@@ -11,7 +11,7 @@ const router = Router();
 router.use(requireAuthGuard);
 
 router.get('/', applicationController.listAll);
-router.get('/debug', (_req, res) => res.json({ success: true, message: 'Applications API is alive' }));
+router.get('/debug', (_req: Request, res: Response) => res.json({ success: true, message: 'Applications API is alive' }));
 router.post('/', validate(createApplicationSchema), applicationController.create);
 router.get('/job/:jobId', applicationController.listByJob);
 router.get('/:id', applicationController.get);

@@ -1,4 +1,4 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -18,7 +18,7 @@ import applicationRoutes from './routes/application.routes.js';
 const app: Application = express();
 
 // Debug Logger — so we can see what's happening in the terminal
-app.use((req, _res, next) => {
+app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log(`📡 [${req.method}] ${req.url}`);
   next();
 });

@@ -27,7 +27,7 @@ const startServer = async (): Promise<void> => {
     process.on('SIGINT', () => shutdown('SIGINT'));
 
     // Handle unhandled promise rejections — log and exit so process managers can restart
-    process.on('unhandledRejection', (reason) => {
+    process.on('unhandledRejection', (reason: any) => {
       logger.error('💥 Unhandled Promise Rejection:', reason);
       process.exit(1);
     });
