@@ -1,0 +1,137 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+  HIRING_MANAGER
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStage {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+/// User — synced from Clerk. One user belongs to one company (multi-tenancy).
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique /// The auth ID from Clerk
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  role      UserRole @default(RECRUITER)
+  avatarUrl String?
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clerkId])
+  @@index([companyId])
+}
+
+/// Company — a tenant in the system. Each company manages its own jobs & candidates.
+model Company {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  logoUrl     String?
+  website     String?
+  industry    String?
+  size        String?
+  description String?
+
+  users        User[]
+  jobs         Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Job — a position posted by a company.
+model Job {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  location    String?
+  isRemote    Boolean   @default(false)
+  salaryMin   Int?
+  salaryMax   Int?
+  status      JobStatus @default(DRAFT)
+
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  postedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+}
+
+/// Candidate — a person who applies to jobs. Independent of User (not a platform user).
+model Candidate {
+  id          String  @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String  @unique
+  phone       String?
+  resumeUrl   String?
+  linkedInUrl String?
+  aiScore     Float?  /// AI-computed candidate quality score (0-100)
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Application — the connection between a Candidate and a Job, with a pipeline stage.
+model Application {
+  id        String           @id @default(cuid())
+  stage     ApplicationStage @default(APPLIED)
+  notes     String?
+  source    String?          /// e.g. "LinkedIn", "Indeed", "Referral"
+  aiSummary String?          /// AI-generated summary for this applicant
+
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jobId, candidateId]) /// A candidate can only apply once per job
+  @@index([jobId])
+  @@index([stage])
+}
