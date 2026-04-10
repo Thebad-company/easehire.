@@ -87,7 +87,7 @@ export default function OverviewPage() {
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Applications</h2>
           <div className="space-y-4">
-            {stats?.recentApplications?.length > 0 ? (
+            {stats && stats.recentApplications && stats.recentApplications.length > 0 ? (
               stats.recentApplications.map((app) => (
                 <div key={app.id} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors">
                   <div className="flex items-center gap-3">
@@ -123,7 +123,7 @@ export default function OverviewPage() {
                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-indigo-600 rounded-full" 
-                        style={{ width: `${(count as number / (stats.totalCandidatesCount || 1)) * 100}%` }}
+                        style={{ width: `${((count as number) / (stats?.totalCandidatesCount || 1)) * 100}%` }}
                       />
                    </div>
                 </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { MapPin, Calendar, Briefcase, Globe, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { MapPin, Calendar, Briefcase, Globe, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 

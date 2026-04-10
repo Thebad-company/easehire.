@@ -68,16 +68,16 @@ export default function SettingsPage() {
                   <Label htmlFor="website">Website</Label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                    <Input id="website" name="website" className="pl-10" defaultValue={company?.website} />
+                    <Input id="website" name="website" className="pl-10" defaultValue={company?.website || ''} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="industry">Industry</Label>
-                  <Input id="industry" name="industry" defaultValue={company?.industry} />
+                  <Input id="industry" name="industry" defaultValue={company?.industry || ''} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="size">Organization Size</Label>
-                  <Input id="size" name="size" defaultValue={company?.size} />
+                  <Input id="size" name="size" defaultValue={company?.size || ''} />
                 </div>
               </div>
 
@@ -88,7 +88,7 @@ export default function SettingsPage() {
                   name="description"
                   rows={4}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
-                  defaultValue={company?.description}
+                  defaultValue={company?.description || ''}
                 />
               </div>
 
@@ -118,7 +118,7 @@ export default function SettingsPage() {
                    </div>
                    <div className="space-y-2">
                       <Label htmlFor="logoUrl">Logo URL</Label>
-                      <Input id="logoUrl" name="logoUrl" defaultValue={company?.logoUrl} placeholder="https://..." />
+                      <Input id="logoUrl" name="logoUrl" defaultValue={company?.logoUrl || ''} placeholder="https://..." />
                    </div>
                 </div>
               </div>
