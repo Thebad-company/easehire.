@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuthGuard } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { jobController } from '../controllers/job.controller.js';
-import { createJobSchema, updateJobSchema, jobQuerySchema } from '../schemas/job.schema.ts';
+import { createJobSchema, updateJobSchema, jobQuerySchema } from '../schemas/job.schema.js';
 
 const router = Router();
 
