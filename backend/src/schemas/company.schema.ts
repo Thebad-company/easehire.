@@ -9,6 +9,7 @@ export const createCompanySchema = z.object({
   size: z.string().max(50).optional(),
   description: z.string().max(1000).optional(),
   logoUrl: z.string().url('Invalid logo URL').optional().or(z.literal('')),
+  brandingColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color').optional().or(z.literal('')),
 });
 
 export const updateCompanySchema = createCompanySchema.partial();

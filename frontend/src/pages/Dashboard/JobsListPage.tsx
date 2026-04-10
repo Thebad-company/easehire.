@@ -33,7 +33,7 @@ export default function JobsListPage() {
           <h1 className="text-2xl font-bold text-slate-900">My Jobs</h1>
           <p className="text-slate-500 text-sm mt-1">Manage all your active and draft job listings.</p>
         </div>
-        <Button asChild>
+        <Button asChild variant="secondary" size="lg">
           <Link to="/dashboard/jobs/new">
             <Plus className="mr-2 h-4 w-4" />
             New Job
@@ -58,8 +58,8 @@ export default function JobsListPage() {
           <p className="text-slate-500 mt-2 max-w-sm mx-auto">
             Get started by creating your first job listing to start receiving applications.
           </p>
-          <Button asChild className="mt-6">
-            <Link to="/dashboard/jobs/new">Create Job</Link>
+          <Button asChild variant="secondary" size="lg" className="mt-6">
+            <Link to="/dashboard/jobs/new">Post your first job</Link>
           </Button>
         </div>
       ) : (

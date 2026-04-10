@@ -1,0 +1,62 @@
+# Implementation Plan: Job Distribution & Fast Screening
+
+This plan outlines the architecture for transforming EaseHire into a multi-site distribution engine, allowing recruiters to post to LinkedIn, Indeed, and Google Jobs while speeding up candidate screening.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Public Job Board Access**: This feature introduces public-facing routes. We must ensure sensitive candidate data is never exposed. Only job title, description, and company info will be available via the public API.
+
+> [!NOTE]
+> **Candidate Applications**: Candidates will be able to apply via the public page without a Clerk account. We will store their data as "External" applications.
+
+## Proposed Changes
+
+### 1. Backend: The Distribution Engine
+
+#### [NEW] `backend/src/services/feed.service.ts`
+- Generates **XML feeds** customized for Indeed and LinkedIn formats.
+- Aggregates all `ACTIVE` jobs for a specific company.
+
+#### [NEW] `backend/src/routes/public.routes.ts`
+- **GET /api/public/jobs/:companyId**: Returns public listings.
+- **GET /api/public/jobs/:slug**: Returns a single job for the SEO landing page.
+- **GET /api/public/feeds/:companySlug/indeed**: Returns the XML feed.
+
+#### [MODIFY] `backend/src/app.ts`
+- Register public routes *before* the auth-protected routes so they are accessible by bots and candidates.
+
+---
+
+### 2. Frontend: SEO & Public Portal
+
+#### [NEW] `/frontend/src/pages/Public/JobPostingPage.tsx`
+- A premium, responsive landing page for job seekers.
+- **SEO Injection**: Adds `<script type="application/ld+json">` for **Google Jobs** schema.
+- **Apply Form**: A clean form for candidates to submit resumes directly.
+
+#### [NEW] `/frontend/src/pages/Public/CompanyCareerPage.tsx`
+- A public list of all open roles for a specific organization.
+
+---
+
+### 3. Recruiter Tools: Fast Screening
+
+#### [MODIFY] `frontend/src/pages/Dashboard/JobDetailsPage.tsx`
+- **Bulk Action Bar**: Add checkboxes next to candidates to trigger "Bulk Reject" or "Bulk Move to Interview".
+- **Visual Filters**: Quick-toggle buttons to filter by rating or AI score range.
+
+## Open Questions
+
+- **Storage**: For public resumes, should we continue using the current Supabase bucket, or create a separate `public-applications` bucket for improved isolation?
+- **Domain Strategy**: Should public jobs be hosted on a subpath (e.g., `/j/`) or do we want to support company subdomains later (e.g., `acme.easehire.com`)?
+
+## Verification Plan
+
+### Automated Tests
+- **XML Validation**: Use an XML linter to verify the Indeed feed matches their specs.
+- **SEO Audit**: Run Lighthouse on the public job page to verify JSON-LD correctness.
+
+### Manual Verification
+- Verify that navigating to a public job page does NOT redirect to the Clerk login screen.
+- Verify that submitting the public apply form creates a record in the recruiter dashboard.

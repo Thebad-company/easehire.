@@ -23,7 +23,12 @@ export function useApi() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'API request failed');
+      // Handle structured errors from our backend
+      const message = data.error || data.message || 'API request failed';
+      const error = new Error(message) as any;
+      error.status = response.status;
+      error.issues = data.issues;
+      throw error;
     }
 
     return data;

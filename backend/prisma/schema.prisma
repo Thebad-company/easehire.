@@ -67,6 +67,7 @@ model Company {
   industry    String?
   size        String?
   description String?
+  brandingColor String?
 
   users        User[]
   jobs         Job[]
@@ -79,8 +80,10 @@ model Company {
 model Job {
   id          String    @id @default(cuid())
   title       String
+  slug        String
   description String
   location    String?
+  type        String?
   isRemote    Boolean   @default(false)
   salaryMin   Int?
   salaryMax   Int?
@@ -96,6 +99,7 @@ model Job {
 
   @@index([companyId])
   @@index([status])
+  @@unique([companyId, slug])
 }
 
 /// Candidate — a person who applies to jobs. Independent of User (not a platform user).
@@ -122,6 +126,7 @@ model Application {
   notes     String?
   source    String?          /// e.g. "LinkedIn", "Indeed", "Referral"
   aiSummary String?          /// AI-generated summary for this applicant
+  rating    Int?             @default(0)
 
   jobId       String
   job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)

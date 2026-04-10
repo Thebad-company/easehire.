@@ -1,19 +1,43 @@
-import { useState } from 'react'
-import { Building2, Globe, Save, Bell, Shield } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Building2, Globe, Save, Bell, Shield, Palette } from 'lucide-react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useApi } from '@/hooks/useApi'
+import type { Company } from '@/types'
 
 export default function SettingsPage() {
+  const api = useApi()
   const [loading, setLoading] = useState(false)
+  const [company, setCompany] = useState<Company | null>(null)
 
-  const handleSave = () => {
+  useEffect(() => {
+    async function loadCompany() {
+      try {
+        const res = await api.get('/api/companies/mine')
+        setCompany(res.data)
+      } catch (err) {
+        console.error('Failed to load company', err)
+      }
+    }
+    loadCompany()
+  }, [api])
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const formData = new FormData(e.target as HTMLFormElement)
+      const data = Object.fromEntries(formData.entries())
+      await api.patch('/api/companies/mine', data)
       alert('Settings saved successfully!')
-    }, 1000)
+    } catch (err) {
+      console.error('Failed to save settings', err)
+      alert('Failed to save settings.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -34,26 +58,26 @@ export default function SettingsPage() {
               </div>
             </div>
             
-            <div className="p-6 space-y-6">
+            <form onSubmit={handleSave} className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" defaultValue="Acme Corp" />
+                  <Label htmlFor="name">Company Name</Label>
+                  <Input id="name" name="name" defaultValue={company?.name} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="website">Website</Label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                    <Input id="website" className="pl-10" defaultValue="https://acme.inc" />
+                    <Input id="website" name="website" className="pl-10" defaultValue={company?.website} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="industry">Industry</Label>
-                  <Input id="industry" defaultValue="Technology & Software" />
+                  <Input id="industry" name="industry" defaultValue={company?.industry} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="size">Organization Size</Label>
-                  <Input id="size" defaultValue="51 - 200 employees" />
+                  <Input id="size" name="size" defaultValue={company?.size} />
                 </div>
               </div>
 
@@ -61,12 +85,51 @@ export default function SettingsPage() {
                 <Label htmlFor="description">Company Description</Label>
                 <textarea 
                   id="description"
+                  name="description"
                   rows={4}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
-                  defaultValue="Leading the way in innovative software solutions for modern enterprises."
+                  defaultValue={company?.description}
                 />
               </div>
-            </div>
+
+              <div className="pt-6 border-t border-slate-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <Palette className="size-4 text-indigo-600" />
+                  <h4 className="font-semibold text-slate-900">Branding</h4>
+                </div>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                   <div className="space-y-2">
+                      <Label htmlFor="brandingColor">Brand Primary Color</Label>
+                      <div className="flex gap-3">
+                        <Input 
+                          id="brandingColor" 
+                          name="brandingColor" 
+                          type="color" 
+                          className="h-10 w-20 p-1" 
+                          defaultValue={company?.brandingColor || '#4f46e5'} 
+                        />
+                        <Input 
+                          type="text" 
+                          value={company?.brandingColor || '#4f46e5'} 
+                          className="flex-1 font-mono" 
+                          readOnly 
+                        />
+                      </div>
+                   </div>
+                   <div className="space-y-2">
+                      <Label htmlFor="logoUrl">Logo URL</Label>
+                      <Input id="logoUrl" name="logoUrl" defaultValue={company?.logoUrl} placeholder="https://..." />
+                   </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button type="submit" disabled={loading}>
+                  <Save className="mr-2 size-4" />
+                  {loading ? 'Saving...' : 'Save Profile'}
+                </Button>
+              </div>
+            </form>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -97,16 +160,17 @@ export default function SettingsPage() {
 
         {/* Action Sidebar */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-            <h4 className="text-sm font-bold text-slate-900 mb-4">Save Changes</h4>
-            <p className="text-xs text-slate-500 mb-6">
-              Updates to your company profile will be visible across all your active job listings.
+            <p className="text-xs text-slate-500 mb-6 font-medium bg-slate-50 p-3 rounded-lg border border-slate-100">
+               Your company branding is applied to all public job boards and candidate-facing pages.
             </p>
-            <Button className="w-full justify-center" onClick={handleSave} disabled={loading}>
-              <Save className="mr-2 size-4" />
-              {loading ? 'Saving...' : 'Save Settings'}
-            </Button>
-          </div>
+            {company?.logoUrl && (
+              <div className="mb-6">
+                <Label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-2">Live Logo Preview</Label>
+                <div className="size-20 rounded-xl border border-slate-200 p-2 bg-white flex items-center justify-center">
+                   <img src={company.logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" />
+                </div>
+              </div>
+            )}
 
           <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
             <Shield className="size-8 mb-4 opacity-80" />

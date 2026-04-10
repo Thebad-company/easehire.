@@ -2,9 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { applicationService } from '../services/application.service.js';
 import { userService } from '../services/user.service.js';
 import { getCurrentUserId } from '../middlewares/auth.js';
-import { CreateApplicationInput, UpdateApplicationStageInput } from '../schemas/application.schema.js';
+import {
+  CreateApplicationInput,
+  BulkUpdateApplicationsInput,
+} from '../schemas/application.schema.js';
 import { ForbiddenError } from '../utils/errors.js';
-import { ApplicationStage } from '@prisma/client';
 
 export class ApplicationController {
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -47,15 +49,14 @@ export class ApplicationController {
     }
   };
 
-  updateStage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const clerkId = getCurrentUserId(req);
       const user = await userService.getUserByClerkId(clerkId);
       
       if (!user.companyId) throw new ForbiddenError('Access denied');
       
-      const { stage } = req.body as UpdateApplicationStageInput;
-      const application = await applicationService.updateApplicationStage(user.companyId, req.params.id, stage);
+      const application = await applicationService.updateApplication(user.companyId, req.params.id, req.body);
       res.json({ success: true, data: application });
     } catch (err) {
       next(err);
@@ -70,6 +71,24 @@ export class ApplicationController {
       if (!user.companyId) throw new ForbiddenError('Access denied');
       
       const applications = await applicationService.listAll(user.companyId);
+      res.json({ success: true, data: applications });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  bulkUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const clerkId = getCurrentUserId(req);
+      const user = await userService.getUserByClerkId(clerkId);
+
+      if (!user.companyId) throw new ForbiddenError('Access denied');
+
+      const applications = await applicationService.bulkUpdateApplications(
+        user.companyId,
+        req.body as BulkUpdateApplicationsInput,
+      );
+
       res.json({ success: true, data: applications });
     } catch (err) {
       next(err);

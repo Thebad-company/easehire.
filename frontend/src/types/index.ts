@@ -25,6 +25,7 @@ export interface Company {
   industry?: string | null;
   size?: string | null;
   description?: string | null;
+  brandingColor?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,8 +33,10 @@ export interface Company {
 export interface Job {
   id: string;
   title: string;
+  slug: string;
   description: string;
   location?: string | null;
+  type?: string | null;
   isRemote: boolean;
   salaryMin?: number | null;
   salaryMax?: number | null;
@@ -42,6 +45,7 @@ export interface Job {
   postedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  company?: Company;
   applications?: Application[];
   _count?: {
     applications: number;
@@ -67,10 +71,39 @@ export interface Application {
   notes?: string | null;
   source?: string | null;
   aiSummary?: string | null;
+  rating?: number | null;
   jobId: string;
   job?: Job;
   candidateId: string;
   candidate?: Candidate;
   appliedAt: string;
   updatedAt: string;
+}
+
+export interface PublicCompanyProfile {
+  id: string
+  name: string
+  slug: string
+  logoUrl?: string | null
+  brandingColor?: string | null
+  description?: string | null
+  website?: string | null
+}
+
+export interface PublicJobSummary {
+  id: string
+  title: string
+  slug: string
+  location?: string | null
+  type?: string | null
+  isRemote: boolean
+  postedAt?: string | null
+  createdAt: string
+}
+
+export interface PublicJobDetails extends PublicJobSummary {
+  description: string
+  salaryMin?: number | null
+  salaryMax?: number | null
+  company: PublicCompanyProfile
 }

@@ -2,7 +2,11 @@ import { Router, Request, Response } from 'express';
 import { requireAuthGuard } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { applicationController } from '../controllers/application.controller.js';
-import { createApplicationSchema, updateApplicationStageSchema } from '../schemas/application.schema.js';
+import {
+  createApplicationSchema,
+  updateApplicationSchema,
+  bulkUpdateApplicationsSchema,
+} from '../schemas/application.schema.js';
 
 const router = Router();
 
@@ -13,8 +17,9 @@ router.use(requireAuthGuard);
 router.get('/', applicationController.listAll);
 router.get('/debug', (_req: Request, res: Response) => res.json({ success: true, message: 'Applications API is alive' }));
 router.post('/', validate(createApplicationSchema), applicationController.create);
+router.patch('/bulk', validate(bulkUpdateApplicationsSchema), applicationController.bulkUpdate);
 router.get('/job/:jobId', applicationController.listByJob);
 router.get('/:id', applicationController.get);
-router.patch('/:id/stage', validate(updateApplicationStageSchema), applicationController.updateStage);
+router.patch('/:id', validate(updateApplicationSchema), applicationController.update);
 
 export default router;

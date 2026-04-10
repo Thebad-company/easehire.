@@ -14,6 +14,8 @@ import userRoutes from './routes/user.routes.js';
 import companyRoutes from './routes/company.routes.js';
 import jobRoutes from './routes/job.routes.js';
 import applicationRoutes from './routes/application.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
+import publicRoutes from './routes/public.routes.js';
 
 const app: Application = express();
 
@@ -47,20 +49,22 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 const morganStream = { write: (message: string) => logger.http(message.trim()) };
 app.use(morgan(env.IS_PRODUCTION ? 'combined' : 'dev', { stream: morganStream }));
 
-// ─── Clerk Auth ───────────────────────────────────────────────────────────────
-// Attaches auth state to all requests. Routes still need requireAuthGuard to be protected.
-app.use(clerkMiddleware());
-
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ success: true, status: 'OK', env: env.NODE_ENV, timestamp: new Date().toISOString() });
 });
 
-// ─── API Routes ───────────────────────────────────────────────────────────────
+app.use('/api/public', publicRoutes);
+
+// ─── Clerk Auth ───────────────────────────────────────────────────────────────
+// Attaches auth state to all requests after public routes. Protected routes still enforce requireAuthGuard.
+app.use(clerkMiddleware());
+
 app.use('/api/users', userRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

@@ -6,6 +6,7 @@ const jobBaseSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(200),
   description: z.string().min(20, 'Description must be at least 20 characters'),
   location: z.string().max(200).optional(),
+  type: z.string().max(50).optional(),
   isRemote: z.boolean().default(false),
   salaryMin: z.number().int().positive().optional(),
   salaryMax: z.number().int().positive().optional(),

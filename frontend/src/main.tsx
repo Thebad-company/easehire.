@@ -14,6 +14,8 @@ import JobDetailsPage from './pages/Dashboard/JobDetailsPage.tsx'
 import CandidatesPage from './pages/Dashboard/CandidatesPage.tsx'
 import SettingsPage from './pages/Dashboard/SettingsPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
+import CompanyCareerPage from './pages/Public/CompanyCareerPage.tsx'
+import JobPostingPage from './pages/Public/JobPostingPage.tsx'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -32,6 +34,8 @@ createRoot(document.getElementById('root')!).render(
           {/* Clerk Auth Pages */}
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
+          <Route path="/careers/:companySlug" element={<CompanyCareerPage />} />
+          <Route path="/j/:companySlug/:jobSlug" element={<JobPostingPage />} />
 
           {/* Protected — App Dashboards */}
           <Route path="/dashboard" element={<DashboardPage />} />

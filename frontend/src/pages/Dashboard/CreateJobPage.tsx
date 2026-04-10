@@ -17,6 +17,7 @@ export default function CreateJobPage() {
     title: '',
     description: '',
     location: '',
+    type: 'Full-time',
     isRemote: false,
     salaryMin: '',
     salaryMax: '',
@@ -28,13 +29,22 @@ export default function CreateJobPage() {
     try {
       await api.post('/api/jobs', {
         ...formData,
-        salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : undefined,
-        salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : undefined,
+        salaryMin: formData.salaryMin !== '' ? parseInt(formData.salaryMin) : undefined,
+        salaryMax: formData.salaryMax !== '' ? parseInt(formData.salaryMax) : undefined,
       })
       navigate('/dashboard/jobs')
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create job', err)
-      alert('Failed to create job. Please check all fields.')
+      
+      if (err.status === 422 && err.issues) {
+        const issues = err.issues.map((i: any) => `${i.field}: ${i.message}`).join('\n')
+        alert(`Validation failed:\n${issues}`)
+      } else if (err.status === 403) {
+        alert('You must complete your company profile before posting a job.')
+        navigate('/dashboard')
+      } else {
+        alert(err.message || 'Failed to create job. Please check all fields.')
+      }
     } finally {
       setLoading(false)
     }
@@ -63,10 +73,12 @@ export default function CreateJobPage() {
               <Input
                 id="title"
                 required
+                minLength={3}
                 placeholder="e.g. Senior Frontend Engineer"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
+              <p className="text-[10px] text-slate-400">At least 3 characters</p>
             </div>
 
             <div className="space-y-2">
@@ -74,11 +86,13 @@ export default function CreateJobPage() {
               <Textarea
                 id="description"
                 required
+                minLength={20}
                 placeholder="Describe the role, responsibilities, and requirements..."
                 className="min-h-[200px]"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
+              <p className="text-[10px] text-slate-400">At least 20 characters</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -92,11 +106,28 @@ export default function CreateJobPage() {
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 />
               </div>
-              <div className="flex items-center gap-3 pt-8">
+              <div className="space-y-2">
+                <Label htmlFor="type">Employment Type</Label>
+                <select
+                  id="type"
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Internship">Internship</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 pt-2">
                 <Switch
                   id="remote"
                   checked={formData.isRemote}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isRemote: checked })}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isRemote: checked, location: checked ? '' : formData.location })}
                 />
                 <Label htmlFor="remote" className="cursor-pointer">Remote Role</Label>
               </div>

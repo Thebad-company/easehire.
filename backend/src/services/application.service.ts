@@ -1,37 +1,46 @@
 import { prisma } from '../config/prisma.js';
-import { CreateApplicationInput } from '../schemas/application.schema.js';
-import { ApplicationStage } from '@prisma/client';
+import {
+  CreateApplicationInput,
+  CreatePublicApplicationInput,
+  BulkUpdateApplicationsInput,
+} from '../schemas/application.schema.js';
 import { NotFoundError, ConflictError } from '../utils/errors.js';
 
 export class ApplicationService {
-  /**
-   * Creates or updates a candidate and links them to a job via an application.
-   */
-  async createApplication(input: CreateApplicationInput) {
-    const { jobId, candidate: candidateData, source } = input;
+  private normalizeCandidate(candidate: CreateApplicationInput['candidate']) {
+    return {
+      ...candidate,
+      phone: candidate.phone || undefined,
+      resumeUrl: candidate.resumeUrl || undefined,
+      linkedInUrl: candidate.linkedInUrl || undefined,
+    };
+  }
 
-    // Check if job exists
-    const job = await prisma.job.findUnique({ where: { id: jobId } });
-    if (!job) throw new NotFoundError('Job');
+  private async upsertCandidate(candidateData: CreateApplicationInput['candidate']) {
+    const normalizedCandidate = this.normalizeCandidate(candidateData);
 
-    // Find or create candidate by email
-    const candidate = await prisma.candidate.upsert({
-      where: { email: candidateData.email },
+    return prisma.candidate.upsert({
+      where: { email: normalizedCandidate.email },
       update: {
-        firstName: candidateData.firstName,
-        lastName: candidateData.lastName,
-        phone: candidateData.phone,
-        resumeUrl: candidateData.resumeUrl,
-        linkedInUrl: candidateData.linkedInUrl,
+        firstName: normalizedCandidate.firstName,
+        lastName: normalizedCandidate.lastName,
+        phone: normalizedCandidate.phone,
+        resumeUrl: normalizedCandidate.resumeUrl,
+        linkedInUrl: normalizedCandidate.linkedInUrl,
       },
       create: {
-        ...candidateData,
-        // Mock AI Score for the prototype
+        ...normalizedCandidate,
         aiScore: Math.floor(Math.random() * 41) + 60, // 60-100
       },
     });
+  }
 
-    // Check if application already exists
+  private async createJobApplication(jobId: string, source: string | undefined, candidateData: CreateApplicationInput['candidate']) {
+    const job = await prisma.job.findUnique({ where: { id: jobId } });
+    if (!job) throw new NotFoundError('Job');
+
+    const candidate = await this.upsertCandidate(candidateData);
+
     const existing = await prisma.application.findUnique({
       where: { jobId_candidateId: { jobId, candidateId: candidate.id } },
     });
@@ -43,11 +52,32 @@ export class ApplicationService {
         candidateId: candidate.id,
         source,
         stage: 'APPLIED',
-        // Mock AI Summary
         aiSummary: `${candidateData.firstName} shows strong alignment with the ${job.title} role based on their background in similar domains.`,
       },
       include: { candidate: true },
     });
+  }
+
+  /**
+   * Creates or updates a candidate and links them to a job via an application.
+   */
+  async createApplication(input: CreateApplicationInput) {
+    const { jobId, candidate: candidateData, source } = input;
+    return this.createJobApplication(jobId, source, candidateData);
+  }
+
+  async createPublicApplication(companySlug: string, jobSlug: string, input: CreatePublicApplicationInput) {
+    const job = await prisma.job.findFirst({
+      where: {
+        slug: jobSlug,
+        status: 'ACTIVE',
+        company: { slug: companySlug },
+      },
+      select: { id: true },
+    });
+    if (!job) throw new NotFoundError('Job');
+
+    return this.createJobApplication(job.id, input.source ?? 'External', input.candidate);
   }
 
   async getApplicationsByJob(companyId: string, jobId: string) {
@@ -64,7 +94,7 @@ export class ApplicationService {
     });
   }
 
-  async updateApplicationStage(companyId: string, applicationId: string, stage: ApplicationStage) {
+  async updateApplication(companyId: string, applicationId: string, data: Partial<import('@prisma/client').Application>) {
     // Verify application belongs to a job owned by the company
     const application = await prisma.application.findFirst({
       where: {
@@ -76,7 +106,7 @@ export class ApplicationService {
 
     return prisma.application.update({
       where: { id: applicationId },
-      data: { stage },
+      data,
       include: { candidate: true },
     });
   }
@@ -102,6 +132,37 @@ export class ApplicationService {
         candidate: true,
         job: { select: { title: true, id: true } },
       },
+      orderBy: { appliedAt: 'desc' },
+    });
+  }
+
+  async bulkUpdateApplications(companyId: string, input: BulkUpdateApplicationsInput) {
+    const accessibleApplications = await prisma.application.findMany({
+      where: {
+        id: { in: input.applicationIds },
+        job: { companyId },
+      },
+      select: { id: true },
+    });
+
+    if (accessibleApplications.length === 0) {
+      throw new NotFoundError('Applications');
+    }
+
+    const ids = accessibleApplications.map((application) => application.id);
+
+    await prisma.application.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        ...(input.stage !== undefined ? { stage: input.stage } : {}),
+        ...(input.rating !== undefined ? { rating: input.rating } : {}),
+        ...(input.notes !== undefined ? { notes: input.notes } : {}),
+      },
+    });
+
+    return prisma.application.findMany({
+      where: { id: { in: ids } },
+      include: { candidate: true },
       orderBy: { appliedAt: 'desc' },
     });
   }

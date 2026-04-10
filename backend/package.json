@@ -1,6 +1,7 @@
 {
   "name": "easehire-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "EaseHire API — Node.js + Express + Clerk + Supabase (Prisma)",
   "main": "dist/server.js",
   "scripts": {
