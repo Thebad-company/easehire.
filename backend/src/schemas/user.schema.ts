@@ -7,18 +7,18 @@ import { UserRole } from '@prisma/client';
  */
 export const syncUserSchema = z.object({
   email: z.string().email('Invalid email address'),
-  firstName: z.string().min(1).max(100).optional(),
-  lastName: z.string().min(1).max(100).optional(),
-  avatarUrl: z.string().url().optional(),
+  firstName: z.string().min(1).max(100).nullable().optional(),
+  lastName: z.string().min(1).max(100).nullable().optional(),
+  avatarUrl: z.string().url().nullable().optional(),
 });
 
 /**
  * Schema for updating a user's profile.
  */
 export const updateUserSchema = z.object({
-  firstName: z.string().min(1).max(100).optional(),
-  lastName: z.string().min(1).max(100).optional(),
-  avatarUrl: z.string().url().optional(),
+  firstName: z.string().min(1).max(100).nullable().optional(),
+  lastName: z.string().min(1).max(100).nullable().optional(),
+  avatarUrl: z.string().url().nullable().optional(),
   role: z.nativeEnum(UserRole).optional(),
 });
 
